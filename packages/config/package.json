@@ -1,0 +1,13 @@
+{
+  "name": "@repo/config",
+  "version": "0.0.1",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./theme": "./src/theme.ts",
+    "./site": "./src/siteConfig.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}
