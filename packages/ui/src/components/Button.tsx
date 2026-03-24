@@ -1,39 +1,79 @@
-import React from 'react';
+"use client";
+import React, { forwardRef } from "react";
+import { motion, HTMLMotionProps } from "framer-motion";
+import { cn } from "../utils";
+import { Loader2 } from "lucide-react";
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline';
-  size?: 'sm' | 'md' | 'lg';
+export interface ButtonProps extends Omit<HTMLMotionProps<"button">, "ref" | "children"> {
+  variant?: "primary" | "secondary" | "outline" | "ghost" | "glass";
+  size?: "sm" | "md" | "lg" | "icon";
+  isLoading?: boolean;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
+  children?: React.ReactNode;
 }
 
-export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    { variant = 'primary', size = 'md', className = '', ...props },
+    {
+      className,
+      variant = "primary",
+      size = "md",
+      isLoading,
+      leftIcon,
+      rightIcon,
+      children,
+      disabled,
+      ...props
+    },
     ref
   ) => {
-    const baseStyles =
-      'inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
-
     const variants = {
-      primary: 'bg-neutral-900 text-white hover:bg-neutral-800 focus:ring-neutral-500',
-      secondary: 'bg-neutral-100 text-neutral-900 hover:bg-neutral-200 focus:ring-neutral-400',
+      primary:
+        "bg-primary text-primary-foreground hover:opacity-90 shadow-[0_0_20px_rgba(0,0,0,0.1)] dark:shadow-[0_0_20px_rgba(255,255,255,0.1)] border border-transparent",
+      secondary:
+        "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-transparent",
       outline:
-        'border-2 border-neutral-300 text-neutral-900 hover:bg-neutral-50 focus:ring-neutral-400',
+        "border border-foreground/10 bg-transparent hover:bg-foreground/5 text-foreground",
+      ghost: "hover:bg-foreground/5 text-foreground border border-transparent",
+      glass:
+        "bg-white/10 dark:bg-black/10 backdrop-blur-md border border-white/20 dark:border-white/10 text-foreground hover:bg-white/20 dark:hover:bg-black/20 shadow-xl",
     };
 
     const sizes = {
-      sm: 'px-3 py-1.5 text-sm',
-      md: 'px-4 py-2 text-base',
-      lg: 'px-6 py-3 text-lg',
+      sm: "h-9 px-4 text-xs",
+      md: "h-11 px-6 text-sm",
+      lg: "h-14 px-8 text-base",
+      icon: "h-10 w-10",
     };
 
     return (
-      <button
+      <motion.button
         ref={ref}
-        className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        className={cn(
+          "relative inline-flex items-center justify-center rounded-2xl font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 overflow-hidden",
+          variants[variant],
+          sizes[size],
+          (disabled || isLoading) && "opacity-50 cursor-not-allowed",
+          className
+        )}
+        disabled={disabled || isLoading}
         {...props}
-      />
+      >
+        <span className="relative z-10 flex items-center gap-2">
+          {isLoading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            leftIcon
+          )}
+          {children}
+          {!isLoading && rightIcon}
+        </span>
+      </motion.button>
     );
   }
 );
 
-Button.displayName = 'Button';
+Button.displayName = "Button";

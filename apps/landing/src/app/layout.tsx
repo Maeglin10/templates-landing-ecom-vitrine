@@ -1,14 +1,12 @@
-import { Metadata } from 'next';
-import './globals.css';
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Landing Page - High Converting',
-  description: 'Professional landing pages for capturing leads and driving conversions.',
-  openGraph: {
-    title: 'Landing Page - High Converting',
-    description: 'Professional landing pages for capturing leads and driving conversions.',
-    type: 'website',
-  },
+  title: "Premium Landing App",
+  description: "Next-gen aesthetics for modern platforms.",
 };
 
 export default function RootLayout({
@@ -17,8 +15,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="bg-white text-neutral-900">{children}</body>
+    <html lang="en" className="scroll-smooth">
+      <body className={`${inter.className} min-h-screen antialiased bg-background`}>
+        {children}
+      </body>
     </html>
   );
 }

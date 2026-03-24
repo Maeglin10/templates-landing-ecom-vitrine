@@ -12,12 +12,10 @@ const contactFields = [
   { name: 'message', label: 'Message', type: 'textarea' as const, required: true },
 ];
 
-export const metadata = {
-  title: 'Contact Us',
-};
+
 
 export default function Contact() {
-  const { formData, errors, loading, success, setSuccess, handleChange, handleSubmit } = useFormBuilder({
+  const { formData, errors, loading, success, handleChange, handleSubmit } = useFormBuilder({
     fields: contactFields,
     schema: contactFormSchema,
     onSubmit: async (data) => {

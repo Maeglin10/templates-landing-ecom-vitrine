@@ -10,11 +10,13 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@repo/ui": "workspace:*",
-    "@repo/config": "workspace:*",
-    "@repo/lib": "workspace:*",
     "@repo/analytics": "workspace:*",
+    "@repo/config": "workspace:*",
     "@repo/forms": "workspace:*",
+    "@repo/lib": "workspace:*",
+    "@repo/ui": "workspace:*",
+    "framer-motion": "11.18.2",
+    "lucide-react": "^1.6.0",
     "next": "^14.0.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

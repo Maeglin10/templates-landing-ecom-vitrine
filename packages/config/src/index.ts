@@ -1,2 +1,3 @@
-export { theme } from './theme';
-export { createSiteConfig, defaultSiteConfig, type SiteConfig } from './siteConfig';
+export * from "./theme";
+export * from "./siteConfig";
+export * from "./tailwind-config";

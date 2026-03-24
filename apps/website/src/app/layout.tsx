@@ -1,16 +1,12 @@
-import { Metadata } from 'next';
-import './globals.css';
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Professional Website',
-  description: 'Discover our services and learn how we can help your business.',
-  openGraph: {
-    title: 'Professional Website',
-    description: 'Discover our services and learn how we can help your business.',
-    type: 'website',
-  },
+  title: "Corporate Website Platform",
+  description: "Next-gen aesthetics for modern platforms.",
 };
 
 export default function RootLayout({
@@ -19,11 +15,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="bg-white text-neutral-900">
-        <Header />
+    <html lang="en" className="scroll-smooth">
+      <body className={`${inter.className} min-h-screen antialiased bg-background`}>
         {children}
-        <Footer />
       </body>
     </html>
   );
