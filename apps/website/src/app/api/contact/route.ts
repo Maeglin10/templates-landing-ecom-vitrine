@@ -1,25 +1,71 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Resend } from 'resend';
+import { z } from 'zod';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+const contactSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  email: z.string().email('Invalid email'),
+  phone: z.string().optional(),
+  message: z.string().min(10, 'Message must be at least 10 characters'),
+});
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, email, phone, message } = await request.json();
+    const body = await request.json();
+    const parsed = contactSchema.safeParse(body);
 
-    if (!name || !email || !message) {
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Validation failed', details: parsed.error.flatten() },
         { status: 400 }
       );
     }
 
-    // TODO: Send email with Resend
-    // TODO: Store in database
-    console.log('Contact submission:', { name, email, phone, message });
+    const { name, email, phone, message } = parsed.data;
+    const siteEmail = process.env.CONTACT_EMAIL ?? 'contact@yourdomain.com';
+
+    // Notify site owner
+    await resend.emails.send({
+      from: 'contact@yourdomain.com',
+      to: siteEmail,
+      subject: `📩 New contact message from ${name}`,
+      html: `
+        <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:32px 20px">
+          <h2>New Contact Message</h2>
+          <table style="width:100%;border-collapse:collapse">
+            <tr><td style="padding:8px 0;color:#555;width:120px"><strong>Name:</strong></td><td>${name}</td></tr>
+            <tr><td style="padding:8px 0;color:#555"><strong>Email:</strong></td><td>${email}</td></tr>
+            ${phone ? `<tr><td style="padding:8px 0;color:#555"><strong>Phone:</strong></td><td>${phone}</td></tr>` : ''}
+            <tr><td style="padding:8px 0;color:#555;vertical-align:top"><strong>Message:</strong></td><td>${message}</td></tr>
+          </table>
+        </div>
+      `,
+    });
+
+    // Send acknowledgement to visitor
+    await resend.emails.send({
+      from: 'contact@yourdomain.com',
+      to: email,
+      subject: 'We received your message ✅',
+      html: `
+        <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:40px 20px">
+          <h1 style="font-size:28px;font-weight:900">Hi ${name} 👋</h1>
+          <p style="font-size:16px;color:#555;line-height:1.6">
+            Thank you for reaching out! We've received your message and will get back to you within 24–48 hours.
+          </p>
+          <blockquote style="border-left:4px solid #eee;padding:12px 20px;color:#777;margin:24px 0">
+            "${message}"
+          </blockquote>
+          <p style="font-size:14px;color:#999">Best regards,<br/>The Team</p>
+        </div>
+      `,
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error('Contact form error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
