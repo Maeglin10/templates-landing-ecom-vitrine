@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { z } from 'zod';
+import { rateLimit } from '@repo/lib';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -12,6 +13,12 @@ const contactSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+  const rl = rateLimit({ ip, limit: 5, windowMs: 60_000 });
+  if (!rl.allowed) {
+    return NextResponse.json({ error: 'Too many requests. Please wait a moment.' }, { status: 429 });
+  }
+
   try {
     const body = await request.json();
     const parsed = contactSchema.safeParse(body);

@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { Resend } from 'resend';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const stripeKey = process.env.STRIPE_SECRET_KEY;
+if (!stripeKey) throw new Error('STRIPE_SECRET_KEY is not set');
+
+const stripe = new Stripe(stripeKey, {
   apiVersion: '2023-10-16',
 });
 
@@ -16,14 +19,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Missing stripe-signature' }, { status: 400 });
   }
 
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 });
+  }
+
   let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET!
-    );
+    event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
   } catch (err) {
     console.error('Webhook signature verification failed:', err);
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
@@ -36,15 +40,14 @@ export async function POST(request: NextRequest) {
       const customerName = session.metadata?.customerName ?? 'Customer';
       const amountTotal = session.amount_total ? session.amount_total / 100 : 0;
 
-      console.log(`✅ Order confirmed — ${customerEmail} — €${amountTotal}`);
+      console.log(`Order confirmed — ${customerEmail} — €${amountTotal}`);
 
-      // Send confirmation email via Resend
       if (customerEmail) {
         try {
           await resend.emails.send({
             from: 'orders@yourdomain.com',
             to: customerEmail,
-            subject: '✅ Order Confirmed',
+            subject: 'Order Confirmed',
             html: `
               <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
                 <h1>Thank you, ${customerName}!</h1>
@@ -64,7 +67,7 @@ export async function POST(request: NextRequest) {
 
     case 'payment_intent.payment_failed': {
       const paymentIntent = event.data.object as Stripe.PaymentIntent;
-      console.error(`❌ Payment failed: ${paymentIntent.id}`);
+      console.error(`Payment failed: ${paymentIntent.id}`);
       break;
     }
 

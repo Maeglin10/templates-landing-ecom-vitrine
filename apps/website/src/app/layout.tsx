@@ -28,6 +28,9 @@ export const metadata: Metadata = {
     images: [defaultSiteConfig.ogImage],
   },
   robots: { index: true, follow: true },
+  alternates: {
+    canonical: defaultSiteConfig.url,
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -1,21 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { z } from 'zod';
+import { rateLimit } from '@repo/lib';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const stripeKey = process.env.STRIPE_SECRET_KEY;
+if (!stripeKey) throw new Error('STRIPE_SECRET_KEY is not set');
+
+const stripe = new Stripe(stripeKey, {
   apiVersion: '2023-10-16',
 });
 
 const checkoutSchema = z.object({
-  items: z.array(
-    z.object({
-      productId: z.string(),
-      name: z.string(),
-      price: z.number().positive(),
-      quantity: z.number().int().positive(),
-      image: z.string(),
-    })
-  ).min(1),
+  items: z
+    .array(
+      z.object({
+        productId: z.string(),
+        name: z.string(),
+        price: z.number().positive(),
+        quantity: z.number().int().positive(),
+        image: z.string(),
+      }),
+    )
+    .min(1),
   customer: z.object({
     email: z.string().email(),
     name: z.string().min(1),
@@ -23,6 +29,12 @@ const checkoutSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+  const rl = rateLimit({ ip, limit: 10, windowMs: 60_000 });
+  if (!rl.allowed) {
+    return NextResponse.json({ error: 'Too many requests. Please wait a moment.' }, { status: 429 });
+  }
+
   try {
     const body = await request.json();
     const parsed = checkoutSchema.safeParse(body);
@@ -30,7 +42,7 @@ export async function POST(request: NextRequest) {
     if (!parsed.success) {
       return NextResponse.json(
         { error: 'Invalid request data', details: parsed.error.flatten() },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
