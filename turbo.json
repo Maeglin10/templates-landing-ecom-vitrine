@@ -20,6 +20,16 @@
     "test": {
       "outputs": ["coverage/**"],
       "cache": true
+    },
+    "db:generate": {
+      "cache": false,
+      "outputs": ["node_modules/.prisma/**"]
+    },
+    "db:migrate": {
+      "cache": false
+    },
+    "db:seed": {
+      "cache": false
     }
   }
 }
