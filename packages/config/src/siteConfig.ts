@@ -23,9 +23,9 @@ export const createSiteConfig = (config: SiteConfig): SiteConfig => {
 };
 
 export const defaultSiteConfig: SiteConfig = {
-  name: 'Site',
-  description: 'Professional website',
-  url: 'http://localhost:3000',
-  ogImage: 'http://localhost:3000/og.jpg',
-  mail: 'contact@example.com',
+  name: process.env.NEXT_PUBLIC_SITE_NAME ?? 'Site',
+  description: process.env.NEXT_PUBLIC_SITE_DESCRIPTION ?? 'Professional website',
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
+  ogImage: process.env.NEXT_PUBLIC_OG_IMAGE ?? 'http://localhost:3000/og.jpg',
+  mail: process.env.NEXT_PUBLIC_SITE_EMAIL ?? 'contact@example.com',
 };

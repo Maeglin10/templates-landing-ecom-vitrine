@@ -56,6 +56,8 @@ pnpm type-check
 cp .env.example .env.local
 ```
 
+If you deploy apps independently, put a `.env.local` in each app folder (`apps/landing`, `apps/website`, `apps/ecommerce`) or set the same variables in your hosting dashboard for that app.
+
 Required variables:
 - `DATABASE_URL` - PostgreSQL connection
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
@@ -64,6 +66,11 @@ Required variables:
 - `RESEND_API_KEY`
 - `NEXT_PUBLIC_GA_ID` - Google Analytics
 - `NEXT_PUBLIC_META_PIXEL_ID` - Meta Pixel
+- `NEXT_PUBLIC_SITE_NAME`
+- `NEXT_PUBLIC_SITE_DESCRIPTION`
+- `NEXT_PUBLIC_SITE_URL`
+- `NEXT_PUBLIC_OG_IMAGE`
+- `NEXT_PUBLIC_SITE_EMAIL`
 
 ## Project Structure
 
@@ -229,6 +236,7 @@ test → runs all tests (configured for future)
 - No unused variables or parameters
 - Absolute imports to avoid relative paths
 - Shared utilities prevent duplication
+- Rate limiting is in-memory for simplicity; use a shared store (Redis/Upstash) for production-scale traffic.
 
 ## Performance
 

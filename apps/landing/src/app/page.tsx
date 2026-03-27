@@ -2,8 +2,41 @@
 import { Button, Card, Container, Section, Input } from "@repo/ui";
 import { ArrowRight, Sparkles, Zap, Shield, Rocket } from "lucide-react";
 import { motion } from "framer-motion";
+import { useState } from "react";
 
 export default function LandingPage() {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [message, setMessage] = useState<string | null>(null);
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus("loading");
+    setMessage(null);
+
+    try {
+      const response = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        setStatus("error");
+        setMessage(result.error ?? "Subscription failed");
+        return;
+      }
+
+      setStatus("success");
+      setMessage("Thanks for subscribing!");
+      setEmail("");
+    } catch {
+      setStatus("error");
+      setMessage("An unexpected error occurred. Please try again.");
+    }
+  };
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-between pb-24 overflow-hidden relative">
       {/* Background Decor */}
@@ -93,16 +126,27 @@ export default function LandingPage() {
             Sign up for early access. We will only accept 100 teams for the private beta.
           </p>
           
-          <form className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-lg mx-auto" onSubmit={(e) => e.preventDefault()}>
+          <form
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-lg mx-auto"
+            onSubmit={handleNewsletterSubmit}
+          >
             <Input 
               type="email" 
               placeholder="you@company.com" 
+              name="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground placeholder:text-primary-foreground/50 h-14 rounded-2xl focus:bg-primary-foreground/20"
             />
-            <Button size="lg" className="h-14 bg-primary-foreground text-primary hover:bg-primary-foreground/90 shrink-0">
-              Request Access
+            <Button size="lg" className="h-14 bg-primary-foreground text-primary hover:bg-primary-foreground/90 shrink-0" disabled={status === "loading"}>
+              {status === "loading" ? "Submitting..." : "Request Access"}
             </Button>
           </form>
+          {message && (
+            <p className={`mt-4 text-sm ${status === "success" ? "text-green-200" : "text-red-200"}`}>
+              {message}
+            </p>
+          )}
         </Container>
       </Section>
     </main>

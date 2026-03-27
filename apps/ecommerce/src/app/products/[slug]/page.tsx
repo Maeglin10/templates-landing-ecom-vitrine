@@ -9,37 +9,31 @@ import { motion } from "framer-motion";
 import { ShoppingCart, Star, ArrowLeft, Check } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-
-// Mock product - in production this would be fetched via Prisma based on slug
-const getMockProduct = (slug: string) => ({
-  id: "1",
-  slug,
-  name: "Premium Product",
-  price: 99.99,
-  image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&h=600&fit=crop",
-  description: "Crafted for those who demand precision. The ultimate blend of form and function.",
-  details: [
-    "Premium materials, designed to last",
-    "Handcrafted in limited quantities",
-    "Free returns within 30 days",
-    "Free worldwide shipping",
-  ],
-  rating: 4.9,
-  reviewCount: 128,
-  stock: 10,
-  images: [
-    "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=600&h=600&fit=crop",
-    "https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=600&h=600&fit=crop",
-  ],
-});
+import { getProductBySlug } from "@/lib/products";
 
 export default function ProductDetailPage({
   params,
 }: {
   params: { slug: string };
 }) {
-  const product = getMockProduct(params.slug);
+  const product = getProductBySlug(params.slug);
+  if (!product) {
+    return (
+      <main className="min-h-screen bg-stone-50 dark:bg-neutral-950 pt-24">
+        <Section>
+          <Container className="max-w-2xl text-center py-24">
+            <h1 className="text-3xl font-bold mb-3">Product not found</h1>
+            <p className="text-stone-500">The product you are looking for does not exist.</p>
+            <div className="mt-8">
+              <Link href="/products">
+                <Button variant="outline">Back to Products</Button>
+              </Link>
+            </div>
+          </Container>
+        </Section>
+      </main>
+    );
+  }
   const cart = useCart();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
