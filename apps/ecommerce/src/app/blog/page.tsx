@@ -1,20 +1,16 @@
 import { prisma } from "@repo/db";
 import { Container, Section } from "@repo/ui";
-import { formatCurrency } from "@repo/lib";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Blog",
-  description: "Articles, tips, and inspiration from our team.",
-};
+export const metadata: Metadata = { title: "Journal" };
 
 export default async function BlogPage() {
   const posts = await prisma.blogPost.findMany({
     where: { status: "PUBLISHED", appTarget: "ECOMMERCE" },
+    include: { author: { select: { name: true, email: true } } },
     orderBy: { publishedAt: "desc" },
-    include: { author: { select: { name: true } } },
   });
 
   return (
@@ -22,45 +18,31 @@ export default async function BlogPage() {
       <Section>
         <Container>
           <div className="mb-12">
-            <h1 className="text-5xl font-black tracking-tighter mb-3">Blog</h1>
-            <p className="text-stone-500 dark:text-stone-400 text-lg">
-              Articles, tips, and inspiration from our team.
-            </p>
+            <h1 className="text-5xl font-black tracking-tighter">Journal</h1>
+            <p className="text-stone-500 mt-2">Stories, guides, and thoughts from the studio.</p>
           </div>
-
           {posts.length === 0 ? (
-            <div className="text-center py-24 text-stone-400">
-              <p className="text-xl">No articles yet. Check back soon.</p>
-            </div>
+            <p className="text-stone-400 py-16 text-center">Aucun article publie pour le moment.</p>
           ) : (
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {posts.map((post) => (
-                <Link key={post.id} href={`/blog/${post.slug}`} className="group">
-                  <article className="bg-white dark:bg-stone-900 rounded-3xl overflow-hidden border border-stone-100 dark:border-stone-800 hover:shadow-xl transition-shadow">
-                    {post.coverImage ? (
-                      <div className="relative aspect-[16/9] overflow-hidden">
+                <Link key={post.slug} href={`/blog/${post.slug}`} className="group block">
+                  <article className="h-full flex flex-col">
+                    {post.coverImage && (
+                      <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden mb-4 bg-stone-100 dark:bg-stone-900">
                         <Image
                           src={post.coverImage}
                           alt={post.title}
                           fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
                         />
                       </div>
-                    ) : (
-                      <div className="aspect-[16/9] bg-stone-100 dark:bg-stone-800" />
                     )}
-                    <div className="p-6">
+                    <div className="flex-1">
                       <p className="text-xs text-stone-400 mb-2">
-                        {new Date(
-                          post.publishedAt ?? post.createdAt
-                        ).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
-                        {post.author.name && ` · ${post.author.name}`}
+                        {new Date(post.publishedAt ?? post.createdAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
                       </p>
-                      <h2 className="text-xl font-bold leading-snug mb-2 group-hover:text-stone-600 dark:group-hover:text-stone-300 transition-colors">
+                      <h2 className="text-xl font-bold tracking-tight mb-2 group-hover:text-stone-600 dark:group-hover:text-stone-300 transition-colors">
                         {post.title}
                       </h2>
                       {post.excerpt && (
@@ -69,6 +51,9 @@ export default async function BlogPage() {
                         </p>
                       )}
                     </div>
+                    <p className="text-xs text-stone-400 mt-4">
+                      Par {post.author.name ?? post.author.email}
+                    </p>
                   </article>
                 </Link>
               ))}
