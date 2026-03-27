@@ -1,6 +1,6 @@
 "use client";
 
-import { Container, Section, Button, Card } from "@repo/ui";
+import { Container, Section, Button } from "@repo/ui";
 import { motion } from "framer-motion";
 import { Package, Clock, CheckCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";

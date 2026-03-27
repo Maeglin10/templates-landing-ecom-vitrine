@@ -16,7 +16,9 @@
       "@repo/config": ["../../packages/config/src"],
       "@repo/lib": ["../../packages/lib/src"],
       "@repo/forms": ["../../packages/forms/src"],
-      "@repo/analytics": ["../../packages/analytics/src"]
+      "@repo/analytics": ["../../packages/analytics/src"],
+      "@repo/auth": ["../../packages/auth/src"],
+      "@repo/db": ["../../packages/db/src"]
     }
   },
   "include": [

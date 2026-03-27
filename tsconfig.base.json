@@ -25,6 +25,8 @@
       "@repo/lib": ["packages/lib/src"],
       "@repo/forms": ["packages/forms/src"],
       "@repo/analytics": ["packages/analytics/src"],
+      "@repo/auth": ["packages/auth/src"],
+      "@repo/db": ["packages/db/src"],
       "@/*": ["./src/*"]
     }
   },
