@@ -1,7 +1,7 @@
 "use client";
 
 import { useCart } from "@/context/CartContext";
-import { Container, Section, Button, Card } from "@repo/ui";
+import { Container, Section, Button, Breadcrumb } from "@repo/ui";
 import { formatCurrency } from "@repo/lib";
 import { trackCustomEvent } from "@repo/analytics";
 import { useState } from "react";
@@ -62,6 +62,12 @@ export default function ProductDetailPage({
     <main className="min-h-screen bg-stone-50 dark:bg-neutral-950 pt-24">
       <Section>
         <Container>
+          <Breadcrumb crumbs={[
+            { label: "Accueil", href: "/" },
+            { label: "Produits", href: "/products" },
+            { label: product.name },
+          ]} />
+
           <Link
             href="/products"
             className="inline-flex items-center gap-2 text-stone-500 hover:text-stone-900 dark:hover:text-white transition-colors text-sm mb-10"
@@ -139,6 +145,11 @@ export default function ProductDetailPage({
                   <button onClick={() => setQuantity((q) => Math.min(product.stock, q + 1))} className="text-stone-500 hover:text-stone-900 transition-colors">+</button>
                 </div>
                 <span className="text-xs text-stone-400">{product.stock} in stock</span>
+                {product.stock < 5 && product.stock > 0 && (
+                  <span className="text-xs font-bold text-red-500 bg-red-50 dark:bg-red-950 px-2 py-0.5 rounded-full">
+                    Plus que {product.stock} !
+                  </span>
+                )}
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 mt-2">

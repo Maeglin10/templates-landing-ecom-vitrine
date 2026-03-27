@@ -1,70 +1,38 @@
-import Link from 'next/link';
-import { Container, Section } from '@repo/ui';
-import { getBlogPost, blogPosts } from '@/lib/blog';
-import { notFound } from 'next/navigation';
+import { prisma } from "@repo/db";
+import { notFound } from "next/navigation";
+import { Container, Section } from "@repo/ui";
+import ReactMarkdown from "react-markdown";
+import type { Metadata } from "next";
 
-export const generateStaticParams = () => {
-  return blogPosts.map((post) => ({
-    slug: post.slug,
-  }));
-};
-
-export const generateMetadata = ({ params }: { params: { slug: string } }) => {
-  const post = getBlogPost(params.slug);
-  if (!post) return { title: 'Not Found' };
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const post = await prisma.blogPost.findUnique({ where: { slug: params.slug } });
+  if (!post) return {};
   return {
-    title: post.title,
-    description: post.description,
+    title: post.metaTitle ?? post.title,
+    description: post.metaDesc ?? post.excerpt ?? undefined,
   };
-};
+}
 
-export default function BlogPost({ params }: { params: { slug: string } }) {
-  const post = getBlogPost(params.slug);
-
-  if (!post) {
-    notFound();
-  }
+export default async function BlogPost({ params }: { params: { slug: string } }) {
+  const post = await prisma.blogPost.findUnique({
+    where: { slug: params.slug, status: "PUBLISHED" },
+    include: { author: true },
+  });
+  if (!post) notFound();
 
   return (
     <main>
-      <Section className="bg-neutral-50">
-        <Container>
-          <Link href="/blog" className="text-neutral-600 hover:text-neutral-900">
-            ← Back to Blog
-          </Link>
-
-          <article className="mt-8 max-w-2xl">
-            <h1 className="text-4xl font-bold">{post.title}</h1>
-            <div className="mt-4 text-sm text-neutral-600">
-              By {post.author} • {new Date(post.date).toLocaleDateString()}
-            </div>
-
-            <div className="prose mt-12 space-y-4">
-              {post.content
-                .split('\n')
-                .filter((line) => line.trim())
-                .map((line, i) => {
-                  if (line.startsWith('# ')) {
-                    return (
-                      <h1 key={i} className="mt-6 text-2xl font-bold">
-                        {line.replace('# ', '')}
-                      </h1>
-                    );
-                  }
-                  if (line.startsWith('## ')) {
-                    return (
-                      <h2 key={i} className="mt-4 text-xl font-semibold">
-                        {line.replace('## ', '')}
-                      </h2>
-                    );
-                  }
-                  return (
-                    <p key={i} className="text-neutral-600">
-                      {line}
-                    </p>
-                  );
-                })}
-            </div>
+      <Section>
+        <Container className="max-w-3xl">
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
+            <p className="text-neutral-500 text-sm">
+              By {post.author.name ?? post.author.email} •{" "}
+              {new Date(post.publishedAt ?? post.createdAt).toLocaleDateString()}
+            </p>
+          </div>
+          <article className="space-y-4 text-neutral-700 leading-relaxed">
+            <ReactMarkdown>{post.content}</ReactMarkdown>
           </article>
         </Container>
       </Section>
