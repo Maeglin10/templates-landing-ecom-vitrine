@@ -18,7 +18,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   return NextResponse.json(post);
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   const role = (session?.user as any)?.role as string | undefined;
   if (!["ADMIN", "SUPER_ADMIN"].includes(role ?? ""))
