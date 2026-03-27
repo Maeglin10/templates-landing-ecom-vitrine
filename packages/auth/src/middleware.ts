@@ -6,14 +6,14 @@ export async function withAdminAuth(req: NextRequest) {
   if (!token) {
     return NextResponse.redirect(new URL("/auth/login", req.url));
   }
-  const role = token.role as string;
-  if (!["SUPER_ADMIN", "ADMIN", "EDITOR"].includes(role)) {
+  const role = token.role;
+  if (typeof role !== "string" || !["SUPER_ADMIN", "ADMIN", "EDITOR"].includes(role)) {
     return NextResponse.redirect(new URL("/", req.url));
   }
   return null;
 }
 
 export function requireRole(role: string, userRole: string): boolean {
-  const hierarchy: Record<string, number> = { EDITOR: 1, ADMIN: 2, SUPER_ADMIN: 3 };
-  return (hierarchy[userRole] ?? 0) >= (hierarchy[role] ?? 99);
+  const hierarchy = { EDITOR: 1, ADMIN: 2, SUPER_ADMIN: 3 };
+  return (hierarchy[userRole as keyof typeof hierarchy] ?? 0) >= (hierarchy[role as keyof typeof hierarchy] ?? 99);
 }
