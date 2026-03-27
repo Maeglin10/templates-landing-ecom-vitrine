@@ -4,13 +4,14 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ShoppingCart, Star, ArrowLeft, Check, Heart } from "lucide-react";
+import { ShoppingCart, Star, ArrowLeft, Heart } from "lucide-react";
 import { Button } from "@repo/ui";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { toast } from "sonner";
 import { trackCustomEvent } from "@repo/analytics";
 import { formatCurrency } from "@repo/lib";
+import { useSession } from "next-auth/react";
 
 interface ReviewData {
   id: string;
@@ -39,8 +40,17 @@ interface ProductData {
 export function ProductDetailClient({ product }: { product: ProductData }) {
   const cart = useCart();
   const wishlist = useWishlist();
+  const { data: session } = useSession();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
+
+  const [reviews, setReviews] = useState<ReviewData[]>(product.reviews);
+  const [avgRating, setAvgRating] = useState<number | null>(product.avgRating);
+  const [reviewCount, setReviewCount] = useState(product.reviewCount);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [newRating, setNewRating] = useState(0);
+  const [newComment, setNewComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const wished = wishlist.isWished(product.id);
 
@@ -64,6 +74,42 @@ export function ProductDetailClient({ product }: { product: ProductData }) {
       toast.success("Added to wishlist");
     }
   };
+
+  async function handleSubmitReview(e: React.FormEvent) {
+    e.preventDefault();
+    if (newRating === 0) return;
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: product.id,
+          rating: newRating,
+          comment: newComment || undefined,
+        }),
+      });
+      if (res.status === 409) {
+        toast.error("Vous avez déjà laissé un avis sur ce produit");
+        return;
+      }
+      if (!res.ok) {
+        const data = await res.json();
+        toast.error(data.error ?? "Une erreur est survenue");
+        return;
+      }
+      const newReview: ReviewData = await res.json();
+      setReviews((prev) => [newReview, ...prev]);
+      const newCount = reviewCount + 1;
+      setReviewCount(newCount);
+      setAvgRating(((avgRating ?? 0) * reviewCount + newRating) / newCount);
+      setNewRating(0);
+      setNewComment("");
+      toast.success("Avis publié !");
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <>
@@ -116,14 +162,14 @@ export function ProductDetailClient({ product }: { product: ProductData }) {
         <div className="flex flex-col gap-6">
           <div>
             {/* Rating */}
-            {product.avgRating !== null && (
+            {avgRating !== null && (
               <div className="flex items-center gap-2 mb-3">
                 <div className="flex">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
                       className={`w-4 h-4 ${
-                        i < Math.floor(product.avgRating!)
+                        i < Math.floor(avgRating!)
                           ? "fill-yellow-400 text-yellow-400"
                           : "text-stone-200"
                       }`}
@@ -131,8 +177,8 @@ export function ProductDetailClient({ product }: { product: ProductData }) {
                   ))}
                 </div>
                 <span className="text-sm text-stone-500">
-                  {product.avgRating.toFixed(1)} ({product.reviewCount}{" "}
-                  review{product.reviewCount !== 1 ? "s" : ""})
+                  {avgRating.toFixed(1)} ({reviewCount}{" "}
+                  review{reviewCount !== 1 ? "s" : ""})
                 </span>
               </div>
             )}
@@ -232,14 +278,14 @@ export function ProductDetailClient({ product }: { product: ProductData }) {
       </div>
 
       {/* ── Reviews Section ──────────────────────────────── */}
-      {product.reviews.length > 0 && (
-        <div className="mt-20">
-          <h2 className="text-2xl font-bold tracking-tight mb-8">
-            Customer Reviews ({product.reviewCount})
-          </h2>
+      <div className="mt-20">
+        <h2 className="text-2xl font-bold tracking-tight mb-8">
+          Avis clients {reviewCount > 0 && `(${reviewCount})`}
+        </h2>
 
+        {reviews.length > 0 ? (
           <div className="space-y-6">
-            {product.reviews.map((review) => (
+            {reviews.map((review) => (
               <div
                 key={review.id}
                 className="bg-white dark:bg-neutral-900 rounded-2xl p-6 shadow-sm border border-stone-100 dark:border-stone-800"
@@ -278,8 +324,66 @@ export function ProductDetailClient({ product }: { product: ProductData }) {
               </div>
             ))}
           </div>
+        ) : (
+          <p className="text-stone-400 text-sm">
+            Aucun avis pour le moment. Soyez le premier !
+          </p>
+        )}
+
+        {/* Review form */}
+        <div className="mt-10">
+          {session ? (
+            <form
+              onSubmit={handleSubmitReview}
+              className="mt-8 bg-white dark:bg-neutral-900 rounded-2xl p-6 border border-stone-100 dark:border-stone-800"
+            >
+              <h3 className="text-lg font-bold mb-4">Laisser un avis</h3>
+              {/* Star selector */}
+              <div className="flex gap-1 mb-4">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onMouseEnter={() => setHoverRating(star)}
+                    onMouseLeave={() => setHoverRating(0)}
+                    onClick={() => setNewRating(star)}
+                    className="transition-transform hover:scale-110"
+                  >
+                    <Star
+                      className={`w-7 h-7 ${
+                        star <= (hoverRating || newRating)
+                          ? "fill-yellow-400 text-yellow-400"
+                          : "text-stone-300"
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
+              <textarea
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Partagez votre expérience (optionnel)"
+                rows={3}
+                maxLength={1000}
+                className="w-full rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-neutral-800 px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-stone-400 dark:text-white mb-4"
+              />
+              <Button type="submit" disabled={newRating === 0 || submitting}>
+                {submitting ? "Envoi..." : "Publier l'avis"}
+              </Button>
+            </form>
+          ) : (
+            <p className="text-sm text-stone-500">
+              <Link
+                href="/auth/login"
+                className="underline hover:text-stone-900 dark:hover:text-white"
+              >
+                Connectez-vous
+              </Link>{" "}
+              pour laisser un avis.
+            </p>
+          )}
         </div>
-      )}
+      </div>
     </>
   );
 }
