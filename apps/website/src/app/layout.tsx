@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import Script from "next/script";
 import { defaultSiteConfig } from "@repo/config";
 import { Providers } from "@/components/providers";
+import CookieConsent from "@/components/CookieConsent";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${inter.className} min-h-screen antialiased bg-background text-foreground`}>
         <Providers>
           {children}
+          <CookieConsent />
         </Providers>
 
         {gaId && (

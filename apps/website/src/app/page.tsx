@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { Button, Card, Container, Section } from "@repo/ui";
 import { ArrowRight, BookOpen, Layers, Users } from "lucide-react";
 import { motion } from "framer-motion";
@@ -35,9 +36,11 @@ export default function WebsitePage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <Button size="lg" className="h-14">
-                Schedule a Consultation
-              </Button>
+              <Link href="/onboarding">
+                <Button size="lg" className="h-14">
+                  Créer votre projet
+                </Button>
+              </Link>
             </motion.div>
           </div>
           
