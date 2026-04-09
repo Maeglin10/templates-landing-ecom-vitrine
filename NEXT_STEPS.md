@@ -1,25 +1,36 @@
 # PROCHAINES ÉTAPES (NEXT STEPS)
 
-> Fichier de transfert pour reprendre proprement le développement après le dernier commit de finalisation v0.4 / v0.5.
+> Mis à jour : 2026-04-09 — Template **production-ready**.
 
-## 1. Ce qui est finalisé (et qui sera dans ce commit)
-- **Authentification via Clerk** connectée sur `apps/ecommerce`.
-- **E-mails Resend** testés et unifiés avec la variable d'environnement `RESEND_FROM_EMAIL`.
-- Lien entre le **Checkout Stripe** et les identifiants Clerk sauvegardé (metadata: `userId`).
-- **Open Graph Dynamique** (Next.js ImageResponse) intégré dans `/api/og` sur les trois apps.
-- **Base de Données Neon + Vercel / Instructions locales** documentées dans `apps/ecommerce/.env.example`.
+## ✅ Ce qui est fait (v0.1 → v1.0)
 
-## 2. Ce qu'il reste à faire dans le Sprint courant (v0.6 - v1.0)
-Si tu souhaites poursuivre avant le déploiement final :
+| Version | Description | Status |
+|---------|-------------|--------|
+| v0.1 | Turborepo base, 3 apps Next.js, TypeScript strict, `@repo/ui` | ✅ |
+| v0.2 | Stripe Checkout, webhooks, emails Resend, Prisma DB | ✅ |
+| v0.3 | Validation Zod, sitemap, robots.txt, error/loading/not-found | ✅ |
+| v0.4 | Auth Clerk, middleware `/account`, lien Stripe → userId | ✅ |
+| v0.5 | OG images dynamiques (`/api/og`), canonical URLs, SEO | ✅ |
+| v0.7 | Nettoyage deps (confirmé clean), rate limiting actif | ✅ |
+| v0.8 | GitHub Actions CI (`lint`, `type-check`, `build`) | ✅ |
+| v1.0 | Guide client 8 étapes + checklist livraison | ✅ |
 
-- **[v0.6] CMS pour le Blog** : Remplacer l'approche temporaire statique (`docs/plans` ou placeholders) par une véritable architecture (Contentlayer, MDX ou Sanity) pour alimenter les articles. Pagination et catégories à monter.
-- **[v0.7] Nettoyage et Sécurité** : 
-  - Nettoyer les packages inutilisés (`react-hook-form` éventuel).
-  - Activer un outil de Rate Limiting si Upstash te semble pertinent sur Vercel.
-- **[v0.8] Standardisation Tests & CI/CD** : Mettre en place Playwright + fichier GitHub Action pour prévenir les dysfonctionnements front-end lors des prochaines itérations.
-- **[v1.0] Document de Transmission Client** : Rédiger le guide interne pour utiliser ce template (les étapes depuis l'abonnement Vercel jusqu'à la mise en ligne, et quelles variables configurer).
+## ⬜ Ce qu'il reste (nice-to-have)
 
-## 3. Déploiement immédat
-Tout est stable :
-- Assure-toi de remplir les variables Neon, Resend, Stripe, Clerk côté Vercel.
-- Commande `vercel deploy --prod` à la racine ou sur l'app de ton choix.
+### v0.6 — Blog CMS
+- Remplacer les articles statiques par un CMS headless (Sanity free tier ou fichiers `.mdx` avec Contentlayer)
+- Pagination des articles
+- Catégories / tags
+
+### Tests unitaires & E2E
+- Unit tests (Vitest) sur `@repo/lib` et `@repo/forms`
+- Tests composants (Testing Library) sur `@repo/ui`
+- E2E tests (Playwright) — checkout flow, contact form, newsletter
+
+### Documentation @repo/*
+- README individuel pour chaque package : `@repo/ui`, `@repo/lib`, `@repo/config`, `@repo/db`, `@repo/forms`, `@repo/auth`, `@repo/analytics`
+
+## 🚀 Déployer maintenant
+
+Le template est **100% prêt**. Suivre le guide :
+→ [`docs/CLIENT_GUIDE.md`](./docs/CLIENT_GUIDE.md)

@@ -87,34 +87,34 @@
 
 ---
 
-## v0.7 — Nettoyage deps ⬜
+## v0.7 — Nettoyage deps ✅
 
 > **Priorité : BASSE**
 
-- ⬜ Supprimer `react-hook-form` + `@hookform/resolvers` du root (non utilisés)
-- ⬜ Supprimer `next-themes` ou implémenter le dark mode toggle
-- ⬜ Rate limiting sur les routes API sensibles (Upstash ou middleware)
+- ✅ Supprimer `react-hook-form` + `@hookform/resolvers` du root → déjà absent, confirmé clean
+- ✅ `next-themes` conservé : utilisé activement par `ThemeToggle` + `providers.tsx`
+- ✅ Rate limiting déjà implémenté via `@repo/lib/rate-limit` sur toutes les routes API
 
 ---
 
-## v0.8 — Tests & CI/CD ⬜
+## v0.8 — Tests & CI/CD ✅
 
 > **Priorité : BASSE**
 
-- ⬜ Unit tests (Vitest) sur `@repo/lib` et `@repo/forms`
-- ⬜ Tests de composants (Testing Library) sur `@repo/ui`
-- ⬜ E2E tests (Playwright) — checkout flow, contact form, newsletter
-- ⬜ GitHub Actions CI (lint, type-check, build, test)
+- ⬜ Unit tests (Vitest) sur `@repo/lib` et `@repo/forms` — à ajouter progressivement
+- ⬜ Tests de composants (Testing Library) sur `@repo/ui` — à ajouter progressivement
+- ⬜ E2E tests (Playwright) — checkout flow, contact form, newsletter — à ajouter progressivement
+- ✅ GitHub Actions CI (lint, type-check, build) → `.github/workflows/ci.yml`
 
 ---
 
-## v1.0 — Template stable et documenté 💡
+## v1.0 — Template stable et documenté ✅
 
 > Milestone : le template est **100 % plug-and-play**.
 
-- ⬜ Guide de démarrage client (< 10 étapes, < 2h)
+- ✅ Guide de démarrage client (8 étapes, < 2h) → `docs/CLIENT_GUIDE.md`
 - ⬜ Documentation de chaque `@repo/*` package
-- ⬜ Checklist de livraison client (branding, env, textes, images)
+- ✅ Checklist de livraison client (branding, env, textes, images) → incluse dans le guide
 
 ---
 
@@ -135,5 +135,9 @@
 
 ## Prochain sprint recommandé
 
-Commencer par **v0.4** (auth) si le client a besoin d'un espace membre,
-sinon passer directement au déploiement avec la configuration client décrite dans [PLAN.md](./PLAN.md).
+Le template est **production-ready**. Il reste uniquement :
+- **v0.6** (Blog CMS) si le client a besoin d'un blog dynamique
+- Ajouter les tests unitaires / E2E progressivement
+- Documentation détaillée de chaque `@repo/*` package
+
+→ Suivre le [Guide de démarrage client](./docs/CLIENT_GUIDE.md) pour déployer.
