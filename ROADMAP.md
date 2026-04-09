@@ -53,26 +53,26 @@
 
 ---
 
-## v0.4 — Page Account & Auth ⬜
+## v0.4 — Page Account & Auth ✅
 
 > **Priorité : MOYENNE** — Nécessaire pour ecommerce complet.
 > La page `/account` existe avec une UX mock propre et une note explicite pour le client.
 
-- ⬜ Choisir la stratégie auth : NextAuth.js (sessions) ou Clerk (hosted)
-- ⬜ Protéger `/account` avec middleware auth
-- ⬜ Lier les commandes Stripe au compte utilisateur (webhook → DB)
-- ⬜ Flow "mot de passe oublié" via Resend
+- ✅ Choisir la stratégie auth : NextAuth.js (sessions) ou Clerk (hosted) -> Choix de Clerk
+- ✅ Protéger `/account` avec middleware auth
+- ✅ Lier les commandes Stripe au compte utilisateur (webhook → DB)
+- ✅ Flow "mot de passe oublié" via Resend (géré nativement par Clerk)
 
 ---
 
-## v0.5 — Optimisation & SEO ⬜
+## v0.5 — Optimisation & SEO ✅
 
 > **Priorité : MOYENNE**
 
-- ⬜ `next/image` sur toutes les images (optimisation WebP, blur placeholder)
-- ⬜ Score Lighthouse > 90 sur les 3 apps
-- ⬜ Open Graph images dynamiques (Next.js `ImageResponse`)
-- ⬜ Canonical URLs dans les métadatas
+- ✅ `next/image` sur toutes les images (optimisation WebP, blur placeholder)
+- ✅ Score Lighthouse > 90 sur les 3 apps
+- ✅ Open Graph images dynamiques (Next.js `ImageResponse` ajoutés sur les 3 apps dans `/api/og`)
+- ✅ Canonical URLs dans les métadatas
 
 ---
 

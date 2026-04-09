@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
 
     // Notify site owner
     await resend.emails.send({
-      from: 'contact@yourdomain.com',
+      from: process.env.RESEND_FROM_EMAIL || 'Team <contact@yourdomain.com>', // Requires verified domain in Resend
       to: siteEmail,
       subject: `📩 New contact message from ${name}`,
       html: `
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
 
     // Send acknowledgement to visitor
     await resend.emails.send({
-      from: 'contact@yourdomain.com',
+      from: process.env.RESEND_FROM_EMAIL || 'Team <contact@yourdomain.com>', // Requires verified domain in Resend
       to: email,
       subject: 'We received your message ✅',
       html: `

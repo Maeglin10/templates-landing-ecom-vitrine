@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
 
     // Send welcome email via Resend
     await resend.emails.send({
-      from: 'newsletter@yourdomain.com',
+      from: process.env.RESEND_FROM_EMAIL || 'Team <contact@yourdomain.com>', // Requires verified domain in Resend
       to: email,
       subject: '🎉 Welcome — You\'re on the list!',
       html: `

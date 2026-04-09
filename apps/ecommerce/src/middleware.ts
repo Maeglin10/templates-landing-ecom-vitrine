@@ -1,10 +1,11 @@
-import { withAdminAuth } from "@repo/auth";
-import { NextRequest } from "next/server";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
-export async function middleware(req: NextRequest) {
-  return withAdminAuth(req);
-}
+const isProtectedRoute = createRouteMatcher(['/account(.*)']);
+
+export default clerkMiddleware((auth, req) => {
+  if (isProtectedRoute(req)) auth().protect();
+});
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ['/((?!.*\\..*|_next).*)', '/', '/(api|trpc)(.*)'],
 };

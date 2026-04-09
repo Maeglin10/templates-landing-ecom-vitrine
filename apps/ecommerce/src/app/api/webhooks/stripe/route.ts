@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       if (customerEmail) {
         try {
           await resend.emails.send({
-            from: 'orders@yourdomain.com',
+            from: process.env.RESEND_FROM_EMAIL || 'Team <contact@yourdomain.com>', // Requires verified domain in Resend
             to: customerEmail,
             subject: 'Order Confirmed',
             html: `

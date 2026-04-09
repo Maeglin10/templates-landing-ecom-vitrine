@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "stripe:listen": "stripe listen --forward-to localhost:3003/api/webhooks/stripe",
     "dev": "next dev -p 3003",
     "build": "next build",
     "start": "next start",
@@ -12,6 +13,7 @@
     "prisma:migrate": "prisma migrate dev --schema=../../packages/db/prisma/schema.prisma"
   },
   "dependencies": {
+    "@clerk/nextjs": "^7.0.12",
     "@prisma/client": "^5.7.1",
     "@repo/analytics": "workspace:*",
     "@repo/auth": "workspace:*",
@@ -20,21 +22,21 @@
     "@repo/forms": "workspace:*",
     "@repo/lib": "workspace:*",
     "@repo/ui": "workspace:*",
+    "@uiw/react-md-editor": "^4.0.4",
     "cloudinary": "^2.5.1",
-    "next-auth": "^4.24.5",
-    "next-themes": "^0.3.0",
-    "sonner": "^1.7.4",
-    "next-nprogress-bar": "^2.3.13",
     "framer-motion": "11.18.2",
     "lucide-react": "^1.6.0",
     "next": "^14.0.4",
+    "next-auth": "^4.24.5",
+    "next-nprogress-bar": "^2.3.13",
+    "next-themes": "^0.3.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-markdown": "^9.0.1",
     "resend": "^3.0.0",
+    "sonner": "^1.7.4",
     "stripe": "^14.10.0",
-    "zod": "^3.22.4",
-    "@uiw/react-md-editor": "^4.0.4",
-    "react-markdown": "^9.0.1"
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/node": "^20.10.5",

@@ -1,3 +1,4 @@
+import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { z } from 'zod';
@@ -27,6 +28,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const { userId } = await auth();
     const stripeKey = process.env.STRIPE_SECRET_KEY;
     if (!stripeKey) {
       return NextResponse.json({ error: 'Stripe is not configured' }, { status: 500 });
@@ -79,6 +81,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         customerName: customer.name,
         customerEmail: customer.email,
+        ...(userId ? { userId } : {}),
       },
     });
 
