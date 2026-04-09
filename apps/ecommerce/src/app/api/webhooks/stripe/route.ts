@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { Resend } from 'resend';
+import { prisma } from '@repo/db';
 
 const stripeKey = process.env.STRIPE_SECRET_KEY;
 if (!stripeKey) throw new Error('STRIPE_SECRET_KEY is not set');
@@ -60,6 +61,38 @@ export async function POST(request: NextRequest) {
           });
         } catch (emailErr) {
           console.error('Failed to send order confirmation email:', emailErr);
+        }
+      }
+
+      const userId = session.metadata?.userId;
+      if (userId) {
+        try {
+          // Upsert the user to ensure foreign key constraint passes
+          const user = await prisma.user.upsert({
+            where: { id: userId },
+            update: {
+              email: customerEmail || 'unknown@example.com',
+              name: customerName,
+            },
+            create: {
+              id: userId,
+              email: customerEmail || 'unknown@example.com',
+              name: customerName,
+            }
+          });
+
+          // Create the order
+          await prisma.order.create({
+            data: {
+              userId: user.id,
+              total: amountTotal,
+              status: 'paid',
+              stripeId: session.id,
+            }
+          });
+          console.log(`Order saved to database for user ${user.id}`);
+        } catch (dbErr) {
+          console.error('Failed to save order to database:', dbErr);
         }
       }
       break;
