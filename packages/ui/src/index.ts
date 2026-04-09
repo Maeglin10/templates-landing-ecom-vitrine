@@ -7,4 +7,5 @@ export * from "./utils";
 export { ThemeToggle } from "./components/ThemeToggle";
 export { EmptyState } from "./components/EmptyState";
 export { ProductSkeleton, ProductGridSkeleton } from "./components/ProductSkeleton";
+export { TemplateSwitcher } from "./components/TemplateSwitcher";
 export { Breadcrumb } from "./components/Breadcrumb";

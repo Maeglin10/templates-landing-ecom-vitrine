@@ -33,6 +33,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { Header } from "@/components/Header";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
   const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
@@ -40,6 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className="scroll-smooth">
       <body className={`${inter.className} min-h-screen antialiased bg-background text-foreground`}>
+        <Header />
         {children}
 
         {/* Google Analytics */}

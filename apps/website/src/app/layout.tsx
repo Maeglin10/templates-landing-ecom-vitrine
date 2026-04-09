@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import Script from "next/script";
 import { defaultSiteConfig } from "@repo/config";
 import { Providers } from "@/components/providers";
+import { Header } from "@/components/Header";
 import CookieConsent from "@/components/CookieConsent";
 import "./globals.css";
 
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className="scroll-smooth">
       <body className={`${inter.className} min-h-screen antialiased bg-background text-foreground`}>
         <Providers>
+          <Header />
           {children}
           <CookieConsent />
         </Providers>

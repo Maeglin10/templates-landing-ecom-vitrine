@@ -4,6 +4,7 @@ import Script from "next/script";
 import { defaultSiteConfig } from "@repo/config";
 import { CartProvider } from "@/context/CartContext";
 import { Providers } from "@/components/providers";
+import { Header } from "@/components/Header";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -44,7 +45,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${inter.className} min-h-screen antialiased bg-stone-50 dark:bg-neutral-950 text-stone-900 dark:text-stone-50`}>
         <Providers>
           <CartProvider>
-            {children}
+            <Header />
+            <main className="pt-20">
+              {children}
+            </main>
           </CartProvider>
         </Providers>
 
