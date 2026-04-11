@@ -1,0 +1,6 @@
+{
+  "buildCommand": "pnpm install && pnpm turbo run build --filter=landing",
+  "outputDirectory": "apps/landing/.next",
+  "installCommand": "pnpm install",
+  "framework": "nextjs"
+}
