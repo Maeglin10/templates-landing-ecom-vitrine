@@ -18,7 +18,7 @@ const templates: Template[] = [
     id: "landing",
     name: "Landing Page",
     description: "High-conversion lead generation",
-    url: "https://templatesdeploy.vercel.app",
+    url: "https://templates-nexxa.vercel.app",
     icon: <Rocket className="w-5 h-5" />,
     color: "from-blue-500 to-cyan-400",
   },
@@ -26,7 +26,7 @@ const templates: Template[] = [
     id: "website",
     name: "Site Vitrine",
     description: "Professional business presence",
-    url: "#coming-soon-vitrine",
+    url: "https://website-olvl0b3gx-valentins-projects-7cad2c95.vercel.app",
     icon: <Layout className="w-5 h-5" />,
     color: "from-purple-500 to-pink-500",
   },
@@ -34,7 +34,7 @@ const templates: Template[] = [
     id: "ecommerce",
     name: "E-commerce",
     description: "Full-featured online store",
-    url: "#coming-soon-ecommerce",
+    url: "https://templatesdeploy.vercel.app",
     icon: <ShoppingCart className="w-5 h-5" />,
     color: "from-orange-500 to-amber-400",
   },
@@ -100,8 +100,9 @@ export function TemplateSwitcher() {
                 {templates.map((template) => (
                   <a
                     key={template.id}
-                    href={template.url.startsWith('#coming-soon') ? undefined : template.url}
-                    onClick={template.url.startsWith('#coming-soon') ? (e) => { e.preventDefault(); alert(`${template.name} — Démo bientôt disponible ! 🚀`); } : undefined}
+                    href={template.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className={`flex items-start gap-4 p-3 rounded-xl transition-all duration-200 group ${
                       currentApp === template.id 
                       ? 'bg-foreground/5 border-foreground/10' 

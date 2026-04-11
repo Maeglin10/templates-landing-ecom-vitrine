@@ -1,0 +1,6 @@
+{
+  "installCommand": "cd ../.. && pnpm install --shamefully-hoist",
+  "buildCommand": "cd ../.. && pnpm turbo run build --filter=website",
+  "outputDirectory": ".next",
+  "framework": "nextjs"
+}
