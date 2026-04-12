@@ -61,10 +61,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setTotal(0);
   }, []);
 
-  if (!hydrated) {
-    return <>{children}</>;
-  }
-
   return (
     <CartContext.Provider value={{ items, total, addItem, removeItem, updateQuantity, clear }}>
       {children}

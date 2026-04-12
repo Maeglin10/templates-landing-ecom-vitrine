@@ -4,21 +4,19 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ShoppingCart, Star, ArrowLeft, Heart } from "lucide-react";
+import { ShoppingCart, Star, ArrowLeft, Heart, CheckCircle } from "lucide-react";
 import { Button } from "@repo/ui";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { toast } from "sonner";
-import { trackCustomEvent } from "@repo/analytics";
-import { formatCurrency } from "@repo/lib";
-import { useSession } from "next-auth/react";
 
-interface ReviewData {
+interface RelatedProduct {
   id: string;
-  rating: number;
-  comment: string | null;
-  authorName: string;
-  createdAt: string;
+  name: string;
+  slug: string;
+  price: number;
+  images: string[];
+  stock: number;
 }
 
 interface ProductData {
@@ -34,23 +32,36 @@ interface ProductData {
   categorySlug: string;
   avgRating: number | null;
   reviewCount: number;
-  reviews: ReviewData[];
+  details?: string[];
+  reviews: {
+    id: string;
+    rating: number;
+    comment: string | null;
+    authorName: string;
+    createdAt: string;
+  }[];
 }
 
-export function ProductDetailClient({ product }: { product: ProductData }) {
+function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: "EUR",
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+export function ProductDetailClient({
+  product,
+  relatedProducts = [],
+}: {
+  product: ProductData;
+  relatedProducts?: RelatedProduct[];
+}) {
   const cart = useCart();
   const wishlist = useWishlist();
-  const { data: session } = useSession();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
-
-  const [reviews, setReviews] = useState<ReviewData[]>(product.reviews);
-  const [avgRating, setAvgRating] = useState<number | null>(product.avgRating);
-  const [reviewCount, setReviewCount] = useState(product.reviewCount);
-  const [hoverRating, setHoverRating] = useState(0);
-  const [newRating, setNewRating] = useState(0);
-  const [newComment, setNewComment] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const [added, setAdded] = useState(false);
 
   const wished = wishlist.isWished(product.id);
 
@@ -62,54 +73,15 @@ export function ProductDetailClient({ product }: { product: ProductData }) {
       quantity,
       image: product.images[0] ?? "",
     });
-    trackCustomEvent("add_to_cart", { productId: product.id, quantity });
+    setAdded(true);
     toast.success(`${product.name} added to cart`);
+    setTimeout(() => setAdded(false), 2000);
   };
 
   const handleToggleWishlist = () => {
     wishlist.toggle(product.id);
-    if (wished) {
-      toast.success("Removed from wishlist");
-    } else {
-      toast.success("Added to wishlist");
-    }
+    toast(wished ? "Removed from wishlist" : "Added to wishlist");
   };
-
-  async function handleSubmitReview(e: React.FormEvent) {
-    e.preventDefault();
-    if (newRating === 0) return;
-    setSubmitting(true);
-    try {
-      const res = await fetch("/api/reviews", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          productId: product.id,
-          rating: newRating,
-          comment: newComment || undefined,
-        }),
-      });
-      if (res.status === 409) {
-        toast.error("Vous avez déjà laissé un avis sur ce produit");
-        return;
-      }
-      if (!res.ok) {
-        const data = await res.json();
-        toast.error(data.error ?? "Une erreur est survenue");
-        return;
-      }
-      const newReview: ReviewData = await res.json();
-      setReviews((prev) => [newReview, ...prev]);
-      const newCount = reviewCount + 1;
-      setReviewCount(newCount);
-      setAvgRating(((avgRating ?? 0) * reviewCount + newRating) / newCount);
-      setNewRating(0);
-      setNewComment("");
-      toast.success("Avis publié !");
-    } finally {
-      setSubmitting(false);
-    }
-  }
 
   return (
     <>
@@ -121,18 +93,29 @@ export function ProductDetailClient({ product }: { product: ProductData }) {
         Back to Products
       </Link>
 
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-xs text-stone-400 mb-8">
+        <Link href="/" className="hover:text-stone-700 dark:hover:text-stone-200 transition-colors">Home</Link>
+        <span>/</span>
+        <Link href="/products" className="hover:text-stone-700 dark:hover:text-stone-200 transition-colors">Products</Link>
+        <span>/</span>
+        <Link href={`/products?category=${product.categorySlug}`} className="hover:text-stone-700 dark:hover:text-stone-200 transition-colors">{product.categoryName}</Link>
+        <span>/</span>
+        <span className="text-stone-600 dark:text-stone-300">{product.name}</span>
+      </div>
+
       <div className="grid gap-12 lg:grid-cols-2">
-        {/* ── Image Gallery ──────────────────────────────── */}
+        {/* Image Gallery */}
         <div className="space-y-4">
           <motion.div
             key={selectedImage}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="relative w-full aspect-square rounded-3xl overflow-hidden bg-stone-100 dark:bg-stone-900 shadow-2xl"
+            className="relative w-full aspect-square rounded-3xl overflow-hidden bg-stone-100 dark:bg-stone-900 shadow-xl"
           >
             {product.images[selectedImage] && (
               <Image
-                src={product.images[selectedImage]}
+                src={product.images[selectedImage]!}
                 alt={product.name}
                 fill
                 className="object-cover"
@@ -158,35 +141,37 @@ export function ProductDetailClient({ product }: { product: ProductData }) {
           </div>
         </div>
 
-        {/* ── Product Details ────────────────────────────── */}
+        {/* Product Details */}
         <div className="flex flex-col gap-6">
           <div>
-            {/* Rating */}
-            {avgRating !== null && (
+            <span className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-2 block">
+              {product.categoryName}
+            </span>
+
+            {product.avgRating !== null && (
               <div className="flex items-center gap-2 mb-3">
                 <div className="flex">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
                       className={`w-4 h-4 ${
-                        i < Math.floor(avgRating!)
-                          ? "fill-yellow-400 text-yellow-400"
+                        i < Math.floor(product.avgRating!)
+                          ? "fill-amber-400 text-amber-400"
                           : "text-stone-200"
                       }`}
                     />
                   ))}
                 </div>
                 <span className="text-sm text-stone-500">
-                  {avgRating.toFixed(1)} ({reviewCount}{" "}
-                  review{reviewCount !== 1 ? "s" : ""})
+                  {product.avgRating.toFixed(1)} ({product.reviewCount} reviews)
                 </span>
               </div>
             )}
 
-            <h1 className="text-4xl font-black tracking-tighter leading-tight">
+            <h1 className="text-4xl font-black tracking-tighter leading-tight mb-3">
               {product.name}
             </h1>
-            <p className="text-3xl font-bold mt-3">
+            <p className="text-3xl font-bold text-stone-900 dark:text-white">
               {formatCurrency(product.price)}
             </p>
           </div>
@@ -209,32 +194,40 @@ export function ProductDetailClient({ product }: { product: ProductData }) {
             </div>
           )}
 
+          {/* Product details list */}
+          {product.details && product.details.length > 0 && (
+            <div className="bg-stone-50 dark:bg-neutral-900 rounded-2xl p-5 space-y-2">
+              {product.details.map((detail, i) => (
+                <div key={i} className="flex items-center gap-3 text-sm">
+                  <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                  <span className="text-stone-700 dark:text-stone-300">{detail}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Quantity & Stock */}
           <div className="flex items-center gap-4">
-            <span className="text-sm font-medium">Quantity:</span>
+            <span className="text-sm font-semibold">Quantity:</span>
             <div className="flex items-center gap-3 bg-stone-100 dark:bg-stone-900 rounded-xl px-4 py-2">
               <button
                 onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                className="text-stone-500 hover:text-stone-900 dark:hover:text-white transition-colors"
+                className="text-stone-500 hover:text-stone-900 dark:hover:text-white transition-colors w-5 h-5 flex items-center justify-center"
               >
                 -
               </button>
               <span className="font-bold w-6 text-center">{quantity}</span>
               <button
-                onClick={() =>
-                  setQuantity((q) => Math.min(product.stock, q + 1))
-                }
-                className="text-stone-500 hover:text-stone-900 dark:hover:text-white transition-colors"
+                onClick={() => setQuantity((q) => Math.min(product.stock, q + 1))}
+                className="text-stone-500 hover:text-stone-900 dark:hover:text-white transition-colors w-5 h-5 flex items-center justify-center"
               >
                 +
               </button>
             </div>
-            <span className="text-xs text-stone-400">
-              {product.stock} in stock
-            </span>
+            <span className="text-xs text-stone-400">{product.stock} in stock</span>
             {product.stock < 5 && product.stock > 0 && (
               <span className="text-xs font-bold text-red-500 bg-red-50 dark:bg-red-950 px-2 py-0.5 rounded-full">
-                Plus que {product.stock} !
+                Only {product.stock} left!
               </span>
             )}
           </div>
@@ -243,11 +236,11 @@ export function ProductDetailClient({ product }: { product: ProductData }) {
           <div className="flex flex-col sm:flex-row gap-3 mt-2">
             <Button
               size="lg"
-              className="flex-1"
+              className={`flex-1 transition-colors ${added ? "bg-green-600 hover:bg-green-700" : ""}`}
               onClick={handleAddToCart}
-              leftIcon={<ShoppingCart className="w-5 h-5" />}
+              leftIcon={added ? <CheckCircle className="w-5 h-5" /> : <ShoppingCart className="w-5 h-5" />}
             >
-              Add to Cart
+              {added ? "Added to cart!" : "Add to Cart"}
             </Button>
 
             <button
@@ -259,131 +252,52 @@ export function ProductDetailClient({ product }: { product: ProductData }) {
               }`}
               aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
             >
-              <Heart
-                className={`w-5 h-5 ${wished ? "fill-red-500" : ""}`}
-              />
+              <Heart className={`w-5 h-5 ${wished ? "fill-red-500" : ""}`} />
             </button>
 
             <Link href="/checkout">
-              <Button
-                variant="outline"
-                size="lg"
-                className="flex-1 sm:flex-none"
-              >
+              <Button variant="outline" size="lg" className="w-full sm:w-auto">
                 Buy Now
               </Button>
             </Link>
           </div>
-        </div>
-      </div>
 
-      {/* ── Reviews Section ──────────────────────────────── */}
-      <div className="mt-20">
-        <h2 className="text-2xl font-bold tracking-tight mb-8">
-          Avis clients {reviewCount > 0 && `(${reviewCount})`}
-        </h2>
-
-        {reviews.length > 0 ? (
-          <div className="space-y-6">
-            {reviews.map((review) => (
-              <div
-                key={review.id}
-                className="bg-white dark:bg-neutral-900 rounded-2xl p-6 shadow-sm border border-stone-100 dark:border-stone-800"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-4 h-4 ${
-                            i < review.rating
-                              ? "fill-yellow-400 text-yellow-400"
-                              : "text-stone-200"
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-sm font-medium text-stone-700 dark:text-stone-300">
-                      {review.authorName}
-                    </span>
-                  </div>
-                  <span className="text-xs text-stone-400">
-                    {new Date(review.createdAt).toLocaleDateString("fr-FR", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </span>
-                </div>
-                {review.comment && (
-                  <p className="text-stone-600 dark:text-stone-400 text-sm leading-relaxed">
-                    {review.comment}
-                  </p>
-                )}
-              </div>
+          {/* Trust badges */}
+          <div className="flex flex-wrap gap-4 pt-2 border-t border-stone-100 dark:border-stone-800">
+            {["Free delivery over €150", "30-day returns", "Secure payment"].map((badge) => (
+              <span key={badge} className="text-xs text-stone-400 flex items-center gap-1">
+                <CheckCircle className="w-3 h-3 text-green-500" />
+                {badge}
+              </span>
             ))}
           </div>
-        ) : (
-          <p className="text-stone-400 text-sm">
-            Aucun avis pour le moment. Soyez le premier !
-          </p>
-        )}
-
-        {/* Review form */}
-        <div className="mt-10">
-          {session ? (
-            <form
-              onSubmit={handleSubmitReview}
-              className="mt-8 bg-white dark:bg-neutral-900 rounded-2xl p-6 border border-stone-100 dark:border-stone-800"
-            >
-              <h3 className="text-lg font-bold mb-4">Laisser un avis</h3>
-              {/* Star selector */}
-              <div className="flex gap-1 mb-4">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    type="button"
-                    onMouseEnter={() => setHoverRating(star)}
-                    onMouseLeave={() => setHoverRating(0)}
-                    onClick={() => setNewRating(star)}
-                    className="transition-transform hover:scale-110"
-                  >
-                    <Star
-                      className={`w-7 h-7 ${
-                        star <= (hoverRating || newRating)
-                          ? "fill-yellow-400 text-yellow-400"
-                          : "text-stone-300"
-                      }`}
-                    />
-                  </button>
-                ))}
-              </div>
-              <textarea
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Partagez votre expérience (optionnel)"
-                rows={3}
-                maxLength={1000}
-                className="w-full rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-neutral-800 px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-stone-400 dark:text-white mb-4"
-              />
-              <Button type="submit" disabled={newRating === 0 || submitting}>
-                {submitting ? "Envoi..." : "Publier l'avis"}
-              </Button>
-            </form>
-          ) : (
-            <p className="text-sm text-stone-500">
-              <Link
-                href="/auth/login"
-                className="underline hover:text-stone-900 dark:hover:text-white"
-              >
-                Connectez-vous
-              </Link>{" "}
-              pour laisser un avis.
-            </p>
-          )}
         </div>
       </div>
+
+      {/* Related Products */}
+      {relatedProducts.length > 0 && (
+        <div className="mt-24">
+          <h2 className="text-2xl font-black tracking-tighter mb-8">You might also like</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {relatedProducts.map((related) => (
+              <Link key={related.id} href={`/products/${related.slug}`} className="group block">
+                <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-stone-100 dark:bg-stone-900 mb-3">
+                  {related.images[0] && (
+                    <Image
+                      src={related.images[0]}
+                      alt={related.name}
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  )}
+                </div>
+                <h3 className="font-bold text-sm tracking-tight">{related.name}</h3>
+                <p className="text-stone-500 text-sm mt-0.5">{formatCurrency(related.price)}</p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </>
   );
 }

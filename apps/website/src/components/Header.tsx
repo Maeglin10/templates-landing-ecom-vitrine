@@ -9,8 +9,8 @@ export function Header() {
       <Container className="py-4">
         <nav className="flex items-center justify-between">
           <div className="flex items-center gap-8">
-            <Link href="/" className="text-2xl font-bold tracking-tighter">
-              Website
+            <Link href="/" className="text-2xl font-black tracking-tighter">
+              Nex<span className="text-violet-600 dark:text-violet-400">Studio</span>
             </Link>
             <div className="hidden md:flex gap-6">
               <Link href="/services" className="text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors">

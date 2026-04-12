@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { prisma } from "@repo/db";
 import { BlogEditor } from "@/components/admin/BlogEditor";
 import { notFound } from "next/navigation";

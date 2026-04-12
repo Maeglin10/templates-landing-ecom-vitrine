@@ -13,17 +13,20 @@ export function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-stone-50/80 dark:bg-neutral-950/80 backdrop-blur-md border-b border-stone-200 dark:border-neutral-800">
       <Container className="flex items-center justify-between py-4">
         <Link href="/" className="text-xl font-black tracking-tighter">
-          Store
+          Lumière<span className="text-stone-400">.</span>
         </Link>
         <nav className="hidden md:flex items-center gap-8 text-sm">
           <Link href="/products" className="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors">
             Shop
           </Link>
-          <Link href="/blog" className="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors">
-            Journal
+          <Link href="/products?category=Lighting" className="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors">
+            Lighting
           </Link>
-          <Link href="/account" className="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors">
-            Account
+          <Link href="/products?category=Furniture" className="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors">
+            Furniture
+          </Link>
+          <Link href="/products?category=Decor" className="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors">
+            Decor
           </Link>
         </nav>
         <div className="flex items-center gap-3">
