@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { prisma } from "@repo/db";
 import { Prisma } from "@prisma/client";
 import { Container, Section, EmptyState } from "@repo/ui";

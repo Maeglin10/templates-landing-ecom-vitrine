@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { prisma } from "@repo/db";
 import { Container, Section } from "@repo/ui";
 import Link from "next/link";

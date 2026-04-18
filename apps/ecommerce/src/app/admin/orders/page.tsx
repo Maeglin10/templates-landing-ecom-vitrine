@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { prisma } from "@repo/db";
 
 const STATUS_COLORS: Record<string, string> = {

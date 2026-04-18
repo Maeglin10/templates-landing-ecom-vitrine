@@ -1,7 +1,7 @@
+export const dynamic = 'force-dynamic';
 import { prisma } from "@repo/db";
 import { notFound } from "next/navigation";
 import { Container, Section, Breadcrumb } from "@repo/ui";
-import { formatCurrency } from "@repo/lib";
 import type { Metadata } from "next";
 import { ProductDetailClient } from "./ProductDetailClient";
 
@@ -14,10 +14,20 @@ export async function generateMetadata({
     where: { slug: params.slug },
   });
   if (!product) return {};
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3003';
+  const ogUrl = `${appUrl}/api/og?title=${encodeURIComponent(product.name)}&subtitle=${encodeURIComponent(product.description)}&price=${encodeURIComponent(`€${Number(product.price).toFixed(2)}`)}`;
   return {
     title: product.name,
     description: product.description,
-    openGraph: { images: product.images.slice(0, 1) },
+    openGraph: {
+      images: [{ url: ogUrl, width: 1200, height: 630, alt: product.name }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: product.name,
+      description: product.description,
+      images: [ogUrl],
+    },
   };
 }
 

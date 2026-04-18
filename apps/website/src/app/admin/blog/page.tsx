@@ -2,6 +2,8 @@ import { prisma } from "@repo/db";
 import Link from "next/link";
 import { Plus, Pencil, Bot, User } from "lucide-react";
 
+export const dynamic = 'force-dynamic';
+
 const STATUS_COLORS = {
   DRAFT: "bg-yellow-100 text-yellow-700",
   PUBLISHED: "bg-green-100 text-green-700",

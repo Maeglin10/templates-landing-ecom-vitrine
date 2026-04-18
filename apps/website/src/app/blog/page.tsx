@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Container, Section, Card } from "@repo/ui";
 import { prisma } from "@repo/db";
 
+export const dynamic = 'force-dynamic';
 export const metadata = { title: "Blog" };
 
 export default async function Blog() {

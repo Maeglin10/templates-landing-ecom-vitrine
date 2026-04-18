@@ -3,7 +3,7 @@ import { Resend } from 'resend';
 import { z } from 'zod';
 import { rateLimit } from '@repo/lib';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 const newsletterSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -28,6 +28,10 @@ export async function POST(request: NextRequest) {
     }
 
     const { email } = parsed.data;
+
+    if (!resend) {
+      return NextResponse.json({ success: true }); // No-op when Resend not configured
+    }
 
     // Send welcome email via Resend
     await resend.emails.send({

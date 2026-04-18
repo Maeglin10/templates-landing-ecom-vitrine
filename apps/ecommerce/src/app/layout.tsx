@@ -38,6 +38,8 @@ export const metadata: Metadata = {
 
 import { ClerkProvider } from "@clerk/nextjs";
 
+export const dynamic = 'force-dynamic';
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
   const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;

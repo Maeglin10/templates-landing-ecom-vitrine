@@ -3,7 +3,7 @@ import { Resend } from 'resend';
 import { z } from 'zod';
 import { rateLimit } from '@repo/lib';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 const contactSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -32,6 +32,11 @@ export async function POST(request: NextRequest) {
 
     const { name, email, phone, message } = parsed.data;
     const siteEmail = process.env.CONTACT_EMAIL ?? 'contact@yourdomain.com';
+
+    if (!resend) {
+      console.log(`Contact form submission from ${name} <${email}>: ${message}`);
+      return NextResponse.json({ success: true });
+    }
 
     // Notify site owner
     await resend.emails.send({
