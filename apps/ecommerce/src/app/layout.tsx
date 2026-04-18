@@ -36,8 +36,6 @@ export const metadata: Metadata = {
   },
 };
 
-import { ClerkProvider } from "@clerk/nextjs";
-
 export const dynamic = 'force-dynamic';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -45,7 +43,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 
   return (
-    <ClerkProvider>
     <html lang="en" className="scroll-smooth">
       <body className={`${inter.className} min-h-screen antialiased bg-stone-50 dark:bg-neutral-950 text-stone-900 dark:text-stone-50`}>
         <Providers>
@@ -85,6 +82,5 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         )}
       </body>
     </html>
-    </ClerkProvider>
   );
 }

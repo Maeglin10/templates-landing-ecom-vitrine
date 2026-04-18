@@ -3,11 +3,26 @@ import Stripe from 'stripe';
 import { Resend } from 'resend';
 import { prisma } from '@repo/db';
 
-const stripeKey = process.env.STRIPE_SECRET_KEY ?? 'sk_placeholder';
-const stripe = new Stripe(stripeKey, { apiVersion: '2023-10-16' });
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+export const dynamic = 'force-dynamic';
+
+function getStripe(): Stripe | null {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key || key.includes('REPLACE')) return null;
+  return new Stripe(key, { apiVersion: '2023-10-16' });
+}
+
+function getResend(): Resend | null {
+  const key = process.env.RESEND_API_KEY;
+  if (!key || key.includes('REPLACE')) return null;
+  return new Resend(key);
+}
 
 export async function POST(request: NextRequest) {
+  const stripe = getStripe();
+  if (!stripe) {
+    return NextResponse.json({ error: 'Stripe not configured' }, { status: 503 });
+  }
+
   const body = await request.text();
   const sig = request.headers.get('stripe-signature');
 
@@ -38,10 +53,11 @@ export async function POST(request: NextRequest) {
 
       console.log(`Order confirmed — ${customerEmail} — €${amountTotal}`);
 
-      if (customerEmail && resend) {
+      const resend = getResend();
+      if (resend && customerEmail) {
         try {
           await resend.emails.send({
-            from: process.env.RESEND_FROM_EMAIL || 'Team <contact@yourdomain.com>', // Requires verified domain in Resend
+            from: process.env.RESEND_FROM_EMAIL || 'Team <contact@yourdomain.com>',
             to: customerEmail,
             subject: 'Order Confirmed',
             html: `
@@ -62,30 +78,20 @@ export async function POST(request: NextRequest) {
       const userId = session.metadata?.userId;
       if (userId) {
         try {
-          // Upsert the user to ensure foreign key constraint passes
           const user = await prisma.user.upsert({
             where: { id: userId },
-            update: {
-              email: customerEmail || 'unknown@example.com',
-              name: customerName,
-            },
-            create: {
-              id: userId,
-              email: customerEmail || 'unknown@example.com',
-              name: customerName,
-            }
+            update: { email: customerEmail || 'unknown@example.com', name: customerName },
+            create: { id: userId, email: customerEmail || 'unknown@example.com', name: customerName },
           });
 
-          // Create the order
           await prisma.order.create({
             data: {
               userId: user.id,
               total: amountTotal,
               status: 'paid',
               stripeId: session.id,
-            }
+            },
           });
-          console.log(`Order saved to database for user ${user.id}`);
         } catch (dbErr) {
           console.error('Failed to save order to database:', dbErr);
         }

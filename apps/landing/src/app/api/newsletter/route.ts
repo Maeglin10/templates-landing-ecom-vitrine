@@ -1,9 +1,11 @@
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { z } from 'zod';
 import { rateLimit } from '@repo/lib';
 
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+const getResend = () => new Resend(process.env.RESEND_API_KEY ?? '');
 
 const newsletterSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -29,12 +31,8 @@ export async function POST(request: NextRequest) {
 
     const { email } = parsed.data;
 
-    if (!resend) {
-      return NextResponse.json({ success: true }); // No-op when Resend not configured
-    }
-
     // Send welcome email via Resend
-    await resend.emails.send({
+    await getResend().emails.send({
       from: process.env.RESEND_FROM_EMAIL || 'Team <contact@yourdomain.com>', // Requires verified domain in Resend
       to: email,
       subject: '🎉 Welcome — You\'re on the list!',

@@ -8,7 +8,7 @@ export function Footer() {
       <Container>
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 py-8">
           <p className="text-sm text-muted-foreground">
-            &copy; {currentYear} WebStudio. Tous droits réservés.
+            &copy; {currentYear} NexStudio. All rights reserved.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-6">
             <Link href="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">

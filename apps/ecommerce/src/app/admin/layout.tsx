@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@repo/auth";
 import { redirect } from "next/navigation";
