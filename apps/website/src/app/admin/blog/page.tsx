@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 import { prisma } from "@repo/db";
 import Link from "next/link";
 import { Plus, Pencil, Bot, User } from "lucide-react";
